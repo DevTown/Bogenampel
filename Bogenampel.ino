@@ -16,6 +16,7 @@
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 
 int isstop = 0;
+int isstopable = 0;
 
 LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
 #define RelayABCD 9
@@ -49,7 +50,8 @@ void setup() {
 void loop() {
   
   int sensorValue = digitalRead(ButtonStart);
- isstop = 0;
+  isstop = 0;
+  isstopable=0;
   if(sensorValue == 0)
   {
     lcd.clear();
@@ -61,6 +63,7 @@ void loop() {
     //delay(10000);
     horn();
     colorSet(strip.Color(0, 100, 0),10);
+    isstopable=1;
     countdown(120, "Count Gruen:");
     //delay(1200000);
     if(isstop==0)
@@ -68,9 +71,10 @@ void loop() {
       colorSet(strip.Color(100, 100, 0), 200);
       countdown(30, "Count Gelb:");
       //delay(30000);
-     
+    
     }
     isstop = 0;
+    isstopable=0;
     colorSet(strip.Color(100, 0, 0),10);
     horn();
     delay(1000);
@@ -81,6 +85,7 @@ void loop() {
     countdown(10, "Count pre Start:");
     horn();
     colorSet(strip.Color(0, 100, 0),10);
+    isstopable=1;
     countdown(120, "Count Gruen:");
     if(isstop==0)
     {
@@ -96,6 +101,9 @@ void loop() {
     delay(1000);
     horn();
     delay(1000);
+    lcd.clear();
+    writeLCD(0,"Runde Ende");
+    
   }  
 }
 
@@ -117,10 +125,18 @@ void countdown(int sec, char msg[16])
   }
 }
 
+void writeLCD(int line, char msg[16])
+{
+  lcd.setCursor(0, line);
+  lcd.print(msg);
+}
 
 void stopMe()
 {
-  isstop =1;
+  if(isstopable ==1)
+  {
+    isstop =1;
+  }
 }
 void switchABCD()
 {
