@@ -1,4 +1,3 @@
-
 #include <LiquidCrystal.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
@@ -64,7 +63,7 @@ void loop() {
     horn();
     colorSet(strip.Color(0, 100, 0),10);
     isstopable=1;
-    countdown(120, "Count Gruen:");
+    countdown(90, "Count Gruen:");
     //delay(1200000);
     if(isstop==0)
     {
@@ -86,7 +85,7 @@ void loop() {
     horn();
     colorSet(strip.Color(0, 100, 0),10);
     isstopable=1;
-    countdown(120, "Count Gruen:");
+    countdown(90, "Count Gruen:");
     if(isstop==0)
     {
       colorSet(strip.Color(100, 100, 0), 200);
@@ -161,23 +160,4 @@ void colorSet(uint32_t c, uint32_t wait){
     delay(wait);
 }
 
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint32_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-      strip.show();
-    delay(wait);
-  }
-
-}
-
-// Fill the dots one after the other with a color
-void colorWipeInv(uint32_t c, uint32_t wait) {
-  for(uint16_t i=strip.numPixels(); i>0; i--) {
-    strip.setPixelColor(i, c);
-      strip.show();
-    delay(wait);
-  }
-
-}
 
