@@ -16,29 +16,46 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 
 int isstop = 0;
 int isstopable = 0;
+int sectowait = 10;
 
 LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
+
 #define RelayABCD 9
 #define RelayHorn 10
-#define ButtonStart 1
+#define ButtonStart 13
 #define ButtonStop 2
 
+unsigned long time;
+int rounds = 0;
+
 void setup() {
+  Serial.begin(9600);
   strip.begin();
+  Serial.println("Initialize all pixels to 'off'");
   strip.show(); // Initialize all pixels to 'off'
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
+  Serial.println("Print Vereinsname on LCD");
   // Print a message to the LCD.
   lcd.setCursor(0, 0);
   lcd.print("Bogenschuetzen");
   lcd.setCursor(0, 1);
   lcd.print("Ennepe-Ruhr e.V.");
-  
+
+  Serial.println("Set OUTPUTPINS: AB/CD: " + RelayABCD );
   pinMode(RelayABCD,OUTPUT);
+
+  Serial.println("Set OUTPUTPINS: HORN: " + RelayHorn);
   pinMode(RelayHorn,OUTPUT);
+  
+  Serial.println("Set StartButton:" + ButtonStart);
   pinMode(ButtonStart,INPUT_PULLUP);
+  
+  
+  Serial.println("Set initial OutputIO -> LOW");
   digitalWrite (RelayABCD, LOW);
   digitalWrite (RelayHorn, LOW);
+
 
   digitalWrite (RelayABCD, HIGH);
   digitalWrite (RelayHorn, HIGH);
@@ -46,85 +63,120 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ButtonStop),stopMe,LOW);
 }
 
+
 void loop() {
-  
   int sensorValue = digitalRead(ButtonStart);
   isstop = 0;
   isstopable=0;
-  if(sensorValue == 0)
+ 
+  if(sensorValue == LOW)
   {
-    lcd.clear();
-    horn();
-    delay(1000);
-    horn();
-    colorSet(strip.Color(100, 0, 0),10);
-    countdown(10, "Count pre Start:");
-    //delay(10000);
-    horn();
-    colorSet(strip.Color(0, 100, 0),10);
-    isstopable=1;
-    countdown(90, "Count Gruen:");
-    //delay(1200000);
-    if(isstop==0)
-    {
-      colorSet(strip.Color(100, 100, 0), 200);
-      countdown(30, "Count Gelb:");
-      //delay(30000);
     
-    }
-    isstop = 0;
-    isstopable=0;
-    colorSet(strip.Color(100, 0, 0),10);
-    horn();
-    delay(1000);
-    horn();
-    delay(1000);
+    lcd.clear();
+    startpasse();
+    
     switchABCD();
 
-    countdown(10, "Count pre Start:");
-    horn();
-    colorSet(strip.Color(0, 100, 0),10);
-    isstopable=1;
-    countdown(90, "Count Gruen:");
-    if(isstop==0)
-    {
-      colorSet(strip.Color(100, 100, 0), 200);
-      countdown(30, "Count Gelb:");
-     
-    }
-    isstop = 0;
-    colorSet(strip.Color(100, 0, 0),10);
-    horn();
-    delay(1000);
-    horn();
-    delay(1000);
-    horn();
-    delay(1000);
-    lcd.clear();
-    writeLCD(0,"Runde Ende");
+    startpasse();
     
+    Serial.println("3 Horns get arrows");
+    horn(3);
+    lcd.clear();
+    rounds++;
+    writeLCD(0,"Runde Ende");
+    writeLCD(1,String(rounds) + " Runde");
+    Serial.println("Round end...");
+    Serial.println(String(rounds) + "Passen geschossen"); 
   }  
 }
 
-void countdown(int sec, char msg[16])
+
+void setgreen()
 {
-  for(int i =0; i<sec;i++)
-  {
-    if(isstop==1)
-    {
-      return;
-      }
-  delay(1000);
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(msg);
-  lcd.setCursor(0, 1);
-  lcd.print(sec - i);
-    
-  }
+  Serial.println("Set Color 0,100,0");
+  colorSet(strip.Color(0, 100, 0),10);
+  Serial.println("Set ISSTOPABLE -> 1");
+  isstopable=1;
+  Serial.println("Countdown 90sec green. ");
+  countdown(90, "Count Gruen:");
 }
 
-void writeLCD(int line, char msg[16])
+void setyellow()
+{
+  Serial.println("Set Color to Yellow: ");
+  colorSet(strip.Color(100, 100, 0), 200);
+  Serial.println("Countdown 30 sec yellow");
+  countdown(30, "Count Gelb:");
+}
+
+void setred()
+{
+  Serial.println("Set ISSTOP -> 0");
+  isstop = 0;
+  Serial.println("Set ISSTOPABLE -> 0");
+  isstopable=0;
+
+  Serial.println("Set Color to red: ");
+  colorSet(strip.Color(100, 0, 0),10);
+
+  Serial.println("2 Horns next team to line");
+}
+void setprestart()
+{
+  colorSet(strip.Color(100, 0, 0),10);
+  Serial.println("PRESTART 10sec");
+    Serial.println("");
+  countdown(sectowait, "Count pre Start:");
+}
+
+void startpasse()
+{
+ 
+  horn(2);
+  setprestart();
+ 
+  horn(1);
+
+  setgreen();
+
+  Serial.println("Check if stop is not set");
+  if(isstop==0)
+  {
+    Serial.println("STOP IS NOT SET ");
+    
+    setyellow();
+  }
+
+  
+  setred();
+
+}
+
+
+void countdown(long sec, String  msg)
+{
+  long timeadd = (1000 * sec);
+  time = millis() + timeadd;
+  unsigned long starttime = millis();
+    while(time >= millis() )
+    {
+        if(isstop==1)
+      {
+        return;
+      }
+
+      lcd.clear();
+      
+      Serial.println(msg);
+      writeLCD(0,msg);
+       
+      writeLCD(1,String(((millis() - starttime) / 1000)));
+      
+      delay(100);
+    }
+}
+
+void writeLCD(int line, String msg)
 {
   lcd.setCursor(0, line);
   lcd.print(msg);
@@ -135,19 +187,29 @@ void stopMe()
   if(isstopable ==1)
   {
     isstop =1;
+      Serial.println("STOP ME INTERRUPT");
   }
 }
 void switchABCD()
 {
   
    digitalWrite(RelayABCD,  !digitalRead(RelayABCD));  
+     Serial.println("SET AB/CD" + !digitalRead(RelayABCD));
+     
 }
 
-void horn()
+void horn(int times)
 {
-  digitalWrite (RelayHorn, LOW);
-  delay(1000);
-  digitalWrite (RelayHorn, HIGH);
+  int runs = 0;
+  while(runs <times)
+  {     
+    Serial.println("HORN");
+    digitalWrite (RelayHorn, LOW);
+    delay(1000);
+    digitalWrite (RelayHorn, HIGH);
+    runs++;
+    delay(1000);
+  }
 }
 
 
@@ -157,7 +219,6 @@ void colorSet(uint32_t c, uint32_t wait){
 
   }
       strip.show();
-    delay(wait);
 }
 
 
