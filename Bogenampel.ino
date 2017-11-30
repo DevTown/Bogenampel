@@ -1,10 +1,12 @@
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h> 
+#include <Wire.h>
+#include <LCD.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
 
-#define PIN 8
+#define AMPEL 8
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -12,11 +14,14 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, AMPEL, NEO_GRB + NEO_KHZ800);
 
 int isstop = 0;
 int isstopable = 0;
 int sectowait = 10;
+
+#define I2C_ADDR    0x3F
+#define BACKLIGHT_PIN     3
 
 LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
 
@@ -70,8 +75,7 @@ void loop() {
   isstopable=0;
  
   if(sensorValue == LOW)
-  {
-    
+  {    
     lcd.clear();
     startpasse();
     
@@ -121,6 +125,7 @@ void setred()
 
   Serial.println("2 Horns next team to line");
 }
+
 void setprestart()
 {
   colorSet(strip.Color(100, 0, 0),10);
@@ -131,25 +136,19 @@ void setprestart()
 
 void startpasse()
 {
- 
   horn(2);
   setprestart();
  
   horn(1);
-
   setgreen();
 
   Serial.println("Check if stop is not set");
   if(isstop==0)
   {
     Serial.println("STOP IS NOT SET ");
-    
     setyellow();
-  }
-
-  
+  } 
   setred();
-
 }
 
 
@@ -192,10 +191,8 @@ void stopMe()
 }
 void switchABCD()
 {
-  
    digitalWrite(RelayABCD,  !digitalRead(RelayABCD));  
      Serial.println("SET AB/CD" + !digitalRead(RelayABCD));
-     
 }
 
 void horn(int times)
@@ -216,7 +213,6 @@ void horn(int times)
 void colorSet(uint32_t c, uint32_t wait){
  for(uint16_t i=0; i<strip.numPixels(); i++) {
     strip.setPixelColor(i, c);
-
   }
       strip.show();
 }
