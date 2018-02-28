@@ -1,6 +1,8 @@
+#include <LiquidCrystal.h>
+
 #include <LiquidCrystal_I2C.h> 
 #include <Wire.h>
-#include <LCD.h>
+//#include <LCD.h>
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>

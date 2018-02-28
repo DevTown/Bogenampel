@@ -1,6 +1,17 @@
 # Bogenampel
-Ein kleines Projekt um neuen Schützen den Turnierablauf näher zu bringen.
+This is a smal arduino project for targetarchery.
+Every club who has the need to bring there archers to turnamente has the need of a lightsign.
 
-Es basiert auf 60 RGB LED´s zwei Relais und zwei Buttons.
-Das ganze wird über einen arduino betrieben.
-Das ganze wurde in ein schönes Case gesteckt und hilft meinem Bogensportverein nun die Jugendlichen auf Turniere vorzubereiten.
+
+What you need:
+- Arduino
+- Horn
+- Stripe of white LED
+- Stripe of WS2812 LED
+- 2x16 LCD
+- Powersupply 12V
+- 2 Buttons 
+
+
+
+
